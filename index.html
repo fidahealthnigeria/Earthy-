@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ken Burns Slideshow Player</title>
-   <style>
+    <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background-color: #090d16;
@@ -25,6 +25,29 @@
             flex-direction: column;
             gap: 15px;
         }
+
+        /* Fullscreen mode adjustments */
+        :fullscreen {
+            background-color: #090d16;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            padding: 20px;
+        }
+        :fullscreen .app-wrapper {
+            width: 100%;
+            max-width: 100%;
+            height: 100%;
+            justify-content: space-between;
+        }
+        :fullscreen .player-container {
+            flex-grow: 1;
+            height: auto !important;
+        }
+
         /* Toolbar */
         .toolbar {
             display: flex;
@@ -100,6 +123,10 @@
             overflow: hidden;
             pointer-events: none;
         }
+        .slide.fade-out {
+            opacity: 0;
+            z-index: 1;
+        }
         .slide.active { 
             opacity: 1; 
             z-index: 2;
@@ -111,12 +138,17 @@
             transition: transform linear;
         }
         
-        /* Randomized Ken Burns Variations */
-        .slide.active.pan-center img { transform-origin: center center; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
-        .slide.active.pan-tl img { transform-origin: top left; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
-        .slide.active.pan-br img { transform-origin: bottom right; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
-        .slide.active.pan-tr img { transform-origin: top right; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
-        .slide.active.pan-bl img { transform-origin: bottom left; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
+        /* Keep zoom steady on active and fading-out slides to prevent snapping */
+        .slide.active img, .slide.fade-out img { 
+            transform: scale(var(--zoom-level)); 
+            transition-duration: var(--duration); 
+        }
+
+        .slide.active.pan-center img, .slide.fade-out.pan-center img { transform-origin: center center; }
+        .slide.active.pan-tl img, .slide.fade-out.pan-tl img { transform-origin: top left; }
+        .slide.active.pan-br img, .slide.fade-out.pan-br img { transform-origin: bottom right; }
+        .slide.active.pan-tr img, .slide.fade-out.pan-tr img { transform-origin: top right; }
+        .slide.active.pan-bl img, .slide.fade-out.pan-bl img { transform-origin: bottom left; }
 
         /* Caption Overlay */
         .caption {
@@ -171,7 +203,7 @@
 </head>
 <body>
 
-<div class="app-wrapper">
+<div class="app-wrapper" id="appWrapper">
     <!-- Toolbar: File Uploader, Category Selector, Zoom & Speed Sliders -->
     <div class="toolbar">
         <div class="toolbar-section">
@@ -206,7 +238,10 @@
             <button class="btn btn-primary" id="playPauseBtn">Pause</button>
             <button class="btn" id="nextBtn">Next ❯</button>
         </div>
-        <div class="slide-counter" id="slideCounter">Slide 0 of 0</div>
+        <div class="toolbar-section">
+            <button class="btn" id="fullscreenBtn">⛶ Fullscreen</button>
+            <div class="slide-counter" id="slideCounter">Slide 0 of 0</div>
+        </div>
     </div>
 </div>
 
@@ -240,6 +275,8 @@
     const zoomVal = document.getElementById('zoomVal');
     const speedRange = document.getElementById('speedRange');
     const speedVal = document.getElementById('speedVal');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const appWrapper = document.getElementById('appWrapper');
 
     function loadCategories() {
         categorySelect.innerHTML = '';
@@ -291,7 +328,16 @@
         const slides = document.querySelectorAll('.slide');
         if (slides.length === 0) return;
 
-        slides[currentIndex].classList.remove('active');
+        slides.forEach(s => s.classList.remove('fade-out'));
+
+        const currentSlide = slides[currentIndex];
+        currentSlide.classList.remove('active');
+        currentSlide.classList.add('fade-out');
+
+        setTimeout(() => {
+            currentSlide.classList.remove('fade-out');
+        }, 1500);
+
         currentIndex = (index + slides.length) % slides.length;
         
         const nextSlide = slides[currentIndex];
@@ -373,6 +419,26 @@
             playPauseBtn.textContent = 'Play';
             playPauseBtn.classList.remove('btn-primary');
             clearInterval(slideInterval);
+        }
+    });
+
+    // Fullscreen Toggle functionality
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            appWrapper.requestFullscreen().catch(err => {
+                alert(`Error attempting to enable fullscreen mode: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    });
+
+    // Update button text depending on fullscreen state
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            fullscreenBtn.textContent = '⛶ Exit Fullscreen';
+        } else {
+            fullscreenBtn.textContent = '⛶ Fullscreen';
         }
     });
 
