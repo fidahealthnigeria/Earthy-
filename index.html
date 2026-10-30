@@ -131,13 +131,16 @@
             width: 100%; height: 100%;
             object-fit: cover;
             transform: scale(1);
-            transition: transform linear;
         }
-        
-        /* Ken Burns Zoom & Pan Variations */
-        .slide.active img { 
-            transform: scale(var(--zoom-level)); 
-            transition-duration: var(--duration); 
+
+        /* Independent Keyframe Animations for buttery-smooth Ken Burns without clicking */
+        @keyframes kenBurns {
+            0% { transform: scale(1); }
+            100% { transform: scale(var(--zoom-level)); }
+        }
+
+        .slide.active img {
+            animation: kenBurns var(--duration) linear infinite alternate;
         }
 
         .slide.active.pan-center img { transform-origin: center center; }
@@ -145,25 +148,6 @@
         .slide.active.pan-br img { transform-origin: bottom right; }
         .slide.active.pan-tr img { transform-origin: top right; }
         .slide.active.pan-bl img { transform-origin: bottom left; }
-
-        /* Snapshot overlay for buttery-smooth crossfading without clicks */
-        .crossfade-ghost {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 3;
-            opacity: 1;
-            transition: opacity 1.5s ease-in-out;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        .crossfade-ghost.fade-out {
-            opacity: 0;
-        }
-        .crossfade-ghost img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-        }
 
         /* Caption Overlay */
         .caption {
@@ -343,39 +327,7 @@
         const slides = document.querySelectorAll('.slide');
         if (slides.length === 0) return;
 
-        // Remove any existing crossfade ghost snapshots immediately
-        const oldGhosts = container.querySelectorAll('.crossfade-ghost');
-        oldGhosts.forEach(g => g.remove());
-
-        const currentSlide = slides[currentIndex];
-        const currentImg = currentSlide.querySelector('img');
-
-        // Create a frozen ghost snapshot of the exact current visual frame
-        if (currentImg) {
-            const computedMatrix = window.getComputedStyle(currentImg).transform;
-            const ghost = document.createElement('div');
-            ghost.className = 'crossfade-ghost';
-            
-            const ghostImg = document.createElement('img');
-            ghostImg.src = currentImg.src;
-            if (computedMatrix && computedMatrix !== 'none') {
-                ghostImg.style.transform = computedMatrix;
-            }
-            ghost.appendChild(ghostImg);
-            container.appendChild(ghost);
-
-            // Trigger smooth opacity fade-out on the frozen snapshot
-            requestAnimationFrame(() => {
-                ghost.classList.add('fade-out');
-            });
-
-            // Clean up ghost after transition finishes
-            setTimeout(() => {
-                ghost.remove();
-            }, 1500);
-        }
-
-        currentSlide.classList.remove('active');
+        slides[currentIndex].classList.remove('active');
         currentIndex = (index + slides.length) % slides.length;
         
         const nextSlide = slides[currentIndex];
@@ -426,7 +378,7 @@
     });
 
     speedRange.addEventListener('input', (e) => {
-        const seconds = parseInt(e.target.value, 10);
+        const seconds = Math.max(3, parseInt(e.target.value, 10)); // Prevent < 3s breakdown
         slideDuration = seconds * 1000;
         speedVal.textContent = seconds + 's';
 
