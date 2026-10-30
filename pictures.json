@@ -1,0 +1,10 @@
+{
+  "nature": [
+    { "url": "images/nature1.jpg", "caption": "Yosemite Valley" },
+    { "url": "images/nature2.jpg", "caption": "Misty Forest" }
+  ],
+  "architecture": [
+    { "url": "images/arch1.jpg", "caption": "Modern Skyline" },
+    { "url": "images/arch2.jpg", "caption": "Urban Tower" }
+  ]
+}
