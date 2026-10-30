@@ -86,6 +86,7 @@
             accent-color: #0284c7;
             padding: 0;
             height: 6px;
+            width: 90px;
         }
         .slider-value {
             font-size: 12px;
@@ -102,7 +103,7 @@
             margin-right: 8px;
         }
 
-        /* Player Container with strict isolation to prevent layout clicks */
+        /* Player Container */
         .player-container {
             position: relative;
             width: 100%;
@@ -112,7 +113,6 @@
             overflow: hidden;
             box-shadow: 0 25px 35px -10px rgba(0, 0, 0, 0.7);
             border: 1px solid #334155;
-            contain: strict;
         }
         .slide {
             position: absolute;
@@ -135,26 +135,14 @@
             width: 100%; height: 100%;
             object-fit: cover;
             transform: scale(1) translateZ(0);
+            transition: transform var(--duration) linear;
             will-change: transform;
             backface-visibility: hidden;
         }
         
-        /* Keyframe-based Ken Burns Zoom */
-        @keyframes kenBurnsZoom {
-            0% { transform: scale(1) translateZ(0); }
-            100% { transform: scale(var(--zoom-level)) translateZ(0); }
-        }
-
-        .slide.active img {
-            animation: kenBurnsZoom var(--duration) linear infinite alternate;
-        }
-
-        /* Instant freeze when paused class is added to container */
-        .player-container.paused .slide.active img {
-            animation-play-state: paused !important;
-        }
-        .player-container.paused .slide {
-            transition: none !important;
+        /* Ken Burns Zoom & Pan Transitions */
+        .slide.active img { 
+            transform: scale(var(--zoom-level)) translateZ(0); 
         }
 
         .slide.active.pan-center img { transform-origin: center center; }
@@ -186,7 +174,7 @@
             border-radius: 10px;
             border: 1px solid #334155;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 12px;
         }
         .btn {
             background: #334155;
@@ -249,7 +237,7 @@
     <!-- Background Audio Element -->
     <audio id="bgAudio" loop></audio>
 
-    <!-- Navigation, Playback & Music Controls Footer -->
+    <!-- Navigation, Playback & Music Controls Footer (Single Line) -->
     <div class="controls-overlay">
         <div class="toolbar-section">
             <button class="btn" id="prevBtn">❮ Prev</button>
@@ -287,8 +275,8 @@
     let slideInterval = null;
     let isPlaying = true;
     
-    let slideDuration = 6000;
-    let zoomLevel = '1.3';
+    let slideDuration = 6000; // 6 seconds default
+    let zoomLevel = '1.3';    // 1.3x zoom default
 
     const panClasses = ['pan-center', 'pan-tl', 'pan-br', 'pan-tr', 'pan-bl'];
 
@@ -302,7 +290,7 @@
     const speedVal = document.getElementById('speedVal');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const appWrapper = document.getElementById('appWrapper');
-    
+
     // Audio elements
     const audioUploader = document.getElementById('audioUploader');
     const bgAudio = document.getElementById('bgAudio');
@@ -439,12 +427,10 @@
         if (isPlaying) {
             playPauseBtn.textContent = 'Pause';
             playPauseBtn.classList.add('btn-primary');
-            container.classList.remove('paused');
             resetTimer();
         } else {
             playPauseBtn.textContent = 'Play';
             playPauseBtn.classList.remove('btn-primary');
-            container.classList.add('paused');
             clearInterval(slideInterval);
         }
     });
