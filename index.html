@@ -138,7 +138,7 @@
             backface-visibility: hidden;
         }
         
-        /* Keyframe-based Ken Burns Zoom for instant pause capability */
+        /* Keyframe-based Ken Burns Zoom */
         @keyframes kenBurnsZoom {
             0% { transform: scale(1) translateZ(0); }
             100% { transform: scale(var(--zoom-level)) translateZ(0); }
@@ -216,7 +216,7 @@
 <body>
 
 <div class="app-wrapper" id="appWrapper">
-    <!-- Toolbar: File Uploader, Category Selector, Zoom & Speed Sliders -->
+    <!-- Toolbar 1: File Uploader, Category Selector, Zoom & Speed Sliders -->
     <div class="toolbar">
         <div class="toolbar-section">
             <span class="toolbar-label">New image:</span>
@@ -238,7 +238,7 @@
         </div>
     </div>
 
-    <!-- Secondary Toolbar: Background Audio Upload & Controls -->
+    <!-- Toolbar 2: Background Music Upload, Mute & Volume Controls -->
     <div class="toolbar">
         <div class="toolbar-section">
             <span class="toolbar-label">Music:</span>
@@ -314,7 +314,7 @@
     const volumeRange = document.getElementById('volumeRange');
     const volumeVal = document.getElementById('volumeVal');
 
-    bgAudio.volume = 0.5; // default 50% volume
+    bgAudio.volume = 0.5;
 
     function loadCategories() {
         categorySelect.innerHTML = '';
@@ -457,9 +457,8 @@
     audioUploader.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-        const fileURL = URL.createObjectURL(file);
-        bgAudio.src = fileURL;
-        bgAudio.play().catch(err => console.log("Audio autoplay restricted:", err));
+        bgAudio.src = URL.createObjectURL(file);
+        bgAudio.play().catch(err => console.log("Audio play blocked:", err));
     });
 
     // Mute / Unmute Button
