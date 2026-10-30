@@ -138,7 +138,7 @@
             transition: transform linear;
         }
         
-        /* Keep zoom steady on active and fading-out slides to prevent snapping */
+        /* Freeze transform scale on active and fading-out slides to prevent clicking/snapping */
         .slide.active img, .slide.fade-out img { 
             transform: scale(var(--zoom-level)); 
             transition-duration: var(--duration); 
@@ -331,11 +331,22 @@
         slides.forEach(s => s.classList.remove('fade-out'));
 
         const currentSlide = slides[currentIndex];
+        
+        // Capture computed scale matrix value so it stays frozen perfectly in place
+        const currentImg = currentSlide.querySelector('img');
+        if (currentImg) {
+            const computedMatrix = window.getComputedStyle(currentImg).transform;
+            if (computedMatrix && computedMatrix !== 'none') {
+                currentImg.style.transform = computedMatrix;
+            }
+        }
+
         currentSlide.classList.remove('active');
         currentSlide.classList.add('fade-out');
 
         setTimeout(() => {
             currentSlide.classList.remove('fade-out');
+            if (currentImg) currentImg.style.transform = ''; // reset inline style after fade completes
         }, 1500);
 
         currentIndex = (index + slides.length) % slides.length;
@@ -433,7 +444,6 @@
         }
     });
 
-    // Update button text depending on fullscreen state
     document.addEventListener('fullscreenchange', () => {
         if (document.fullscreenElement) {
             fullscreenBtn.textContent = '⛶ Exit Fullscreen';
