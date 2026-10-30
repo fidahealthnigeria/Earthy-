@@ -144,6 +144,13 @@
             transform: scale(var(--zoom-level)) translateZ(0); 
         }
 
+        /* Instant freeze when paused */
+        .player-container.paused .slide.active img,
+        .player-container.paused .slide {
+            transition-play-state: paused !important;
+            animation-play-state: paused !important;
+        }
+
         .slide.active.pan-center img { transform-origin: center center; }
         .slide.active.pan-tl img { transform-origin: top left; }
         .slide.active.pan-br img { transform-origin: bottom right; }
@@ -405,10 +412,12 @@
         if (isPlaying) {
             playPauseBtn.textContent = 'Pause';
             playPauseBtn.classList.add('btn-primary');
+            container.classList.remove('paused'); // Resume animation instantly
             resetTimer();
         } else {
             playPauseBtn.textContent = 'Play';
             playPauseBtn.classList.remove('btn-primary');
+            container.classList.add('paused');    // Freeze animation instantly
             clearInterval(slideInterval);
         }
     });
