@@ -3,479 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ken Burns Slideshow Player</title>
+    <title>Ken Burns Slideshow</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: #090d16;
+            background: #090d16;
             font-family: system-ui, -apple-system, sans-serif;
             color: #f8fafc;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 12px;
-            gap: 10px;
+            padding: 10px;
         }
-        .app-wrapper {
-            width: 92vw;
-            max-width: 960px;
+        .app {
+            width: 94vw;
+            max-width: 980px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         :fullscreen {
-            background-color: #090d16;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100vw;
-            height: 100vh;
-            padding: 12px;
+            background: #090d16;
+            padding: 10px;
         }
-        :fullscreen .app-wrapper {
-            width: 100%;
-            max-width: 100%;
-            height: 100%;
-            justify-content: space-between;
-        }
-        :fullscreen .player-container {
-            flex-grow: 1;
-            height: auto !important;
-        }
+        :fullscreen .app { width: 100%; max-width: 100%; height: 100%; }
+        :fullscreen .player { flex: 1; height: auto !important; }
 
-        .toolbar, .controls-overlay {
+        .bar {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
             background: #1e293b;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border-radius: 7px;
             border: 1px solid #334155;
-            flex-wrap: wrap;
             gap: 8px;
+            flex-wrap: wrap;
         }
-        .toolbar-section {
+        .group {
             display: flex;
             align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
+            gap: 5px;
         }
-        .toolbar-label {
-            font-size: 11px;
+        label {
+            font-size: 10px;
             font-weight: 600;
             color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.3px;
         }
         select, input[type="file"], input[type="range"] {
             background: #0f172a;
-            color: white;
+            color: #fff;
             border: 1px solid #475569;
-            padding: 4px 8px;
-            border-radius: 5px;
+            border-radius: 4px;
+            padding: 3px 6px;
             font-size: 12px;
-            cursor: pointer;
         }
         input[type="range"] {
+            width: 70px;
+            height: 4px;
             accent-color: #0284c7;
             padding: 0;
-            height: 5px;
-            width: 80px;
         }
-        .slider-value {
-            font-size: 11px;
-            color: #38bdf8;
-            min-width: 28px;
-        }
+        .val { font-size: 11px; color: #38bdf8; min-width: 26px; }
         input[type="file"]::file-selector-button {
             background: #334155;
-            color: white;
+            color: #fff;
             border: none;
-            padding: 3px 6px;
+            padding: 2px 5px;
             border-radius: 3px;
-            cursor: pointer;
-            margin-right: 6px;
             font-size: 11px;
+            margin-right: 4px;
         }
 
-        .player-container {
+        .player {
             position: relative;
             width: 100%;
-            height: 520px;
+            height: 540px;
             background: #000;
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.7);
             border: 1px solid #334155;
         }
         .slide {
             position: absolute;
             inset: 0;
             opacity: 0;
+            transition: opacity 1.3s ease;
             z-index: 1;
-            transition: opacity 1.4s ease-in-out;
-            overflow: hidden;
-            pointer-events: none;
         }
-        .slide.active { 
-            opacity: 1; 
-            z-index: 2;
-        }
+        .slide.active { opacity: 1; z-index: 2; }
         .slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scale(1) translateZ(0);
+            transform: scale(1);
             will-change: transform;
-            backface-visibility: hidden;
         }
-
         .caption {
             position: absolute;
-            bottom: 16px;
-            left: 16px;
-            background: rgba(15, 23, 42, 0.88);
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 13px;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(15,23,42,0.9);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
             border: 1px solid #334155;
-            z-index: 10;
         }
 
-        .btn {
+        button {
             background: #334155;
             border: 1px solid #64748b;
-            color: #ffffff;
-            padding: 6px 10px;
-            border-radius: 5px;
-            cursor: pointer;
+            color: #fff;
+            padding: 5px 9px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: 600;
-            font-size: 12px;
-            transition: all 0.15s ease;
-            line-height: 1;
+            cursor: pointer;
         }
-        .btn:hover {
-            background: #475569;
-            border-color: #94a3b8;
-        }
-        .btn-primary {
-            background: #0284c7;
-            border-color: #38bdf8;
-        }
-        .btn-primary:hover {
-            background: #0369a1;
-        }
-        .slide-counter {
-            font-size: 12px;
-            color: #94a3b8;
-        }
-        #muteBtn {
-            min-width: 36px;
-        }
+        button:hover { background: #475569; }
+        button.primary { background: #0284c7; border-color: #38bdf8; }
+        button.primary:hover { background: #0369a1; }
+        .counter { font-size: 12px; color: #94a3b8; }
     </style>
 </head>
 <body>
-
-<div class="app-wrapper" id="appWrapper">
-    <div class="toolbar">
-        <div class="toolbar-section">
-            <span class="toolbar-label">JSON</span>
-            <input type="file" id="jsonUploader" accept=".json">
+<div class="app" id="app">
+    <div class="bar">
+        <div class="group">
+            <label>JSON</label>
+            <input type="file" id="jsonFile" accept=".json">
         </div>
-        <div class="toolbar-section">
-            <span class="toolbar-label">Audio</span>
-            <input type="file" id="audioUploader" accept="audio/*">
+        <div class="group">
+            <label>Audio</label>
+            <input type="file" id="audioFile" accept="audio/*">
         </div>
-        <div class="toolbar-section">
-            <span class="toolbar-label">Category</span>
-            <select id="categorySelect"></select>
+        <div class="group">
+            <label>Category</label>
+            <select id="category"></select>
         </div>
-        <div class="toolbar-section">
-            <span class="toolbar-label">Zoom</span>
-            <input type="range" id="zoomRange" min="1.1" max="1.8" step="0.1" value="1.3">
-            <span class="slider-value" id="zoomVal">1.3x</span>
+        <div class="group">
+            <label>Zoom</label>
+            <input type="range" id="zoom" min="1.1" max="1.8" step="0.1" value="1.3">
+            <span class="val" id="zoomVal">1.3x</span>
         </div>
-        <div class="toolbar-section">
-            <span class="toolbar-label">Speed</span>
-            <input type="range" id="speedRange" min="3" max="15" step="1" value="6">
-            <span class="slider-value" id="speedVal">6s</span>
+        <div class="group">
+            <label>Speed</label>
+            <input type="range" id="speed" min="3" max="15" step="1" value="6">
+            <span class="val" id="speedVal">6s</span>
         </div>
     </div>
 
-    <div class="player-container" id="playerContainer"></div>
+    <div class="player" id="player"></div>
 
-    <div class="controls-overlay">
-        <div class="toolbar-section">
-            <button class="btn" id="prevBtn">❮</button>
-            <button class="btn btn-primary" id="playPauseBtn">Pause</button>
-            <button class="btn" id="nextBtn">❯</button>
-            <button class="btn" id="muteBtn">🔊</button>
+    <div class="bar">
+        <div class="group">
+            <button id="prev">❮</button>
+            <button id="play" class="primary">Pause</button>
+            <button id="next">❯</button>
+            <button id="mute">🔊</button>
         </div>
-        <div class="toolbar-section">
-            <button class="btn" id="fullscreenBtn">⛶</button>
-            <div class="slide-counter" id="slideCounter">Slide 0 of 0</div>
+        <div class="group">
+            <button id="fs">⛶</button>
+            <span class="counter" id="counter">Slide 0 of 0</span>
         </div>
     </div>
 </div>
 
-<audio id="bgAudio" loop></audio>
+<audio id="audio" loop></audio>
 
 <script>
-    let slideshowData = {
-        "nature": [
-            { "url": "https://picsum.photos/id/1018/1200/800", "caption": "Yosemite Valley" },
-            { "url": "https://picsum.photos/id/1015/1200/800", "caption": "Misty Forest" }
-        ],
-        "architecture": [
-            { "url": "https://picsum.photos/id/1031/1200/800", "caption": "Modern Bridge" },
-            { "url": "https://picsum.photos/id/1043/1200/800", "caption": "Urban Tower" }
-        ]
+const data = {
+    nature: [
+        { url: "https://picsum.photos/id/1018/1200/800", caption: "Yosemite Valley" },
+        { url: "https://picsum.photos/id/1015/1200/800", caption: "Misty Forest" }
+    ],
+    architecture: [
+        { url: "https://picsum.photos/id/1031/1200/800", caption: "Modern Bridge" },
+        { url: "https://picsum.photos/id/1043/1200/800", caption: "Urban Tower" }
+    ]
+};
+
+let slidesData = data;
+let category = "nature";
+let index = 0;
+let timer = null;
+let playing = true;
+let muted = false;
+let duration = 6000;
+let zoom = 1.3;
+
+const player = document.getElementById("player");
+const catSelect = document.getElementById("category");
+const playBtn = document.getElementById("play");
+const counter = document.getElementById("counter");
+const audio = document.getElementById("audio");
+const muteBtn = document.getElementById("mute");
+
+function loadCategories() {
+    catSelect.innerHTML = "";
+    Object.keys(slidesData).forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.textContent = key.charAt(0).toUpperCase() + key.slice(1);
+        catSelect.appendChild(opt);
+    });
+    category = Object.keys(slidesData)[0] || "";
+    if (category) build();
+}
+
+function build() {
+    player.innerHTML = "";
+    index = 0;
+    const items = slidesData[category] || [];
+    items.forEach(item => {
+        const slide = document.createElement("div");
+        slide.className = "slide";
+        const img = document.createElement("img");
+        img.src = item.url;
+        img.alt = item.caption || "";
+        slide.appendChild(img);
+        if (item.caption) {
+            const cap = document.createElement("div");
+            cap.className = "caption";
+            cap.textContent = item.caption;
+            slide.appendChild(cap);
+        }
+        player.appendChild(slide);
+    });
+    show(0, true);
+    updateCounter();
+    start();
+}
+
+function applyZoom(img, origin = "center center") {
+    img.style.transition = "none";
+    img.style.transformOrigin = origin;
+    img.style.transform = "scale(1)";
+    void img.offsetWidth; // force restart
+    img.style.transition = `transform ${duration / 1000}s linear`;
+    img.style.transform = `scale(${zoom})`;
+}
+
+function show(i, init = false) {
+    const slides = player.querySelectorAll(".slide");
+    if (!slides.length) return;
+
+    const prev = slides[index];
+    if (prev && !init) {
+        const img = prev.querySelector("img");
+        if (img) {
+            img.style.transition = "none";
+            img.style.transform = getComputedStyle(img).transform;
+        }
+        prev.classList.remove("active");
+    }
+
+    index = (i + slides.length) % slides.length;
+    const next = slides[index];
+    const origins = ["center center", "top left", "bottom right", "top right", "bottom left"];
+    const origin = origins[Math.floor(Math.random() * origins.length)];
+    next.className = "slide active";
+    const img = next.querySelector("img");
+    if (img) applyZoom(img, origin);
+    updateCounter();
+}
+
+function next() { show(index + 1); }
+function prev() { show(index - 1); }
+
+function updateCounter() {
+    const len = (slidesData[category] || []).length;
+    counter.textContent = `Slide ${index + 1} of ${len}`;
+}
+
+function start() {
+    clearInterval(timer);
+    if (playing) timer = setInterval(next, duration);
+}
+
+function togglePlay() {
+    playing = !playing;
+    playBtn.textContent = playing ? "Pause" : "Play";
+    playBtn.classList.toggle("primary", playing);
+    start();
+}
+
+catSelect.onchange = e => { category = e.target.value; build(); };
+document.getElementById("zoom").oninput = e => {
+    zoom = +e.target.value;
+    document.getElementById("zoomVal").textContent = zoom.toFixed(1) + "x";
+    const img = player.querySelector(".slide.active img");
+    if (img) img.style.transform = `scale(${zoom})`;
+};
+document.getElementById("speed").oninput = e => {
+    duration = Math.max(3, +e.target.value) * 1000;
+    document.getElementById("speedVal").textContent = (duration / 1000) + "s";
+    const img = player.querySelector(".slide.active img");
+    if (img) img.style.transition = `transform ${duration / 1000}s linear`;
+    start();
+};
+
+document.getElementById("next").onclick = () => { next(); start(); };
+document.getElementById("prev").onclick = () => { prev(); start(); };
+playBtn.onclick = togglePlay;
+
+document.getElementById("fs").onclick = () => {
+    if (!document.fullscreenElement) document.getElementById("app").requestFullscreen();
+    else document.exitFullscreen();
+};
+
+document.getElementById("jsonFile").onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const parsed = JSON.parse(reader.result);
+            if (parsed && typeof parsed === "object") {
+                slidesData = parsed;
+                loadCategories();
+            }
+        } catch { alert("Invalid JSON"); }
     };
+    reader.readAsText(file);
+};
 
-    let currentCategory = 'nature';
-    let currentIndex = 0;
-    let slideInterval = null;
-    let isPlaying = true;
-    let isMuted = false;
-    
-    let slideDuration = 6000;
-    let zoomLevel = 1.3;
+document.getElementById("audioFile").onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    audio.src = URL.createObjectURL(file);
+    audio.muted = muted;
+    audio.play().catch(() => {});
+};
 
-    const panClasses = ['pan-center', 'pan-tl', 'pan-br', 'pan-tr', 'pan-bl'];
+muteBtn.onclick = () => {
+    muted = !muted;
+    audio.muted = muted;
+    muteBtn.textContent = muted ? "🔇" : "🔊";
+};
 
-    const container = document.getElementById('playerContainer');
-    const categorySelect = document.getElementById('categorySelect');
-    const playPauseBtn = document.getElementById('playPauseBtn');
-    const slideCounter = document.getElementById('slideCounter');
-    const zoomRange = document.getElementById('zoomRange');
-    const zoomVal = document.getElementById('zoomVal');
-    const speedRange = document.getElementById('speedRange');
-    const speedVal = document.getElementById('speedVal');
-    const fullscreenBtn = document.getElementById('fullscreenBtn');
-    const appWrapper = document.getElementById('appWrapper');
-    const muteBtn = document.getElementById('muteBtn');
-    const bgAudio = document.getElementById('bgAudio');
+document.addEventListener("keydown", e => {
+    if (["INPUT", "SELECT"].includes(e.target.tagName)) return;
+    if (e.code === "ArrowRight") { next(); start(); }
+    if (e.code === "ArrowLeft") { prev(); start(); }
+    if (e.code === "Space") { e.preventDefault(); togglePlay(); }
+    if (e.code === "KeyM") muteBtn.click();
+    if (e.code === "KeyF") document.getElementById("fs").click();
+});
 
-    function loadCategories() {
-        categorySelect.innerHTML = '';
-        Object.keys(slideshowData).forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-            categorySelect.appendChild(opt);
-        });
-        currentCategory = Object.keys(slideshowData)[0] || '';
-        if (currentCategory) initCategory(currentCategory);
-    }
-
-    function initCategory(catName) {
-        currentCategory = catName;
-        currentIndex = 0;
-        container.innerHTML = '';
-
-        const items = slideshowData[currentCategory];
-        if (!items || items.length === 0) return;
-
-        items.forEach((item, index) => {
-            const slide = document.createElement('div');
-            slide.className = 'slide';
-            
-            const img = document.createElement('img');
-            img.src = item.url;
-            img.alt = item.caption || '';
-            img.style.transform = 'scale(1) translateZ(0)';
-            slide.appendChild(img);
-
-            if (item.caption) {
-                const caption = document.createElement('div');
-                caption.className = 'caption';
-                caption.textContent = item.caption;
-                slide.appendChild(caption);
-            }
-
-            container.appendChild(slide);
-        });
-
-        // Activate first slide with animation
-        setTimeout(() => goToSlide(0, true), 50);
-        updateCounter();
-        resetTimer();
-    }
-
-    function applyKenBurns(img, origin = 'center center') {
-        img.style.transition = 'none';
-        img.style.transformOrigin = origin;
-        img.style.transform = 'scale(1) translateZ(0)';
-        // Force reflow so the transition restarts
-        void img.offsetWidth;
-        img.style.transition = `transform ${slideDuration / 1000}s linear`;
-        img.style.transform = `scale(${zoomLevel}) translateZ(0)`;
-    }
-
-    function goToSlide(index, isInit = false) {
-        const slides = document.querySelectorAll('.slide');
-        if (slides.length === 0) return;
-
-        const prevSlide = slides[currentIndex];
-        if (prevSlide && !isInit) {
-            const prevImg = prevSlide.querySelector('img');
-            if (prevImg) {
-                // Freeze outgoing image at current scale (no reverse zoom)
-                const computed = getComputedStyle(prevImg).transform;
-                prevImg.style.transition = 'none';
-                prevImg.style.transform = computed;
-            }
-            prevSlide.classList.remove('active');
-        }
-
-        currentIndex = (index + slides.length) % slides.length;
-        const nextSlide = slides[currentIndex];
-        const randomPan = panClasses[Math.floor(Math.random() * panClasses.length)];
-        
-        nextSlide.className = `slide ${randomPan}`;
-        const nextImg = nextSlide.querySelector('img');
-        if (nextImg) {
-            const origins = {
-                'pan-center': 'center center',
-                'pan-tl': 'top left',
-                'pan-br': 'bottom right',
-                'pan-tr': 'top right',
-                'pan-bl': 'bottom left'
-            };
-            applyKenBurns(nextImg, origins[randomPan] || 'center center');
-        }
-
-        nextSlide.classList.add('active');
-        updateCounter();
-    }
-
-    function nextSlide() { goToSlide(currentIndex + 1); }
-    function prevSlide() { goToSlide(currentIndex - 1); }
-
-    function updateCounter() {
-        const items = slideshowData[currentCategory];
-        slideCounter.textContent = `Slide ${currentIndex + 1} of ${items ? items.length : 0}`;
-    }
-
-    function resetTimer() {
-        clearInterval(slideInterval);
-        if (isPlaying) {
-            slideInterval = setInterval(nextSlide, slideDuration);
-        }
-    }
-
-    // Event Listeners
-    categorySelect.addEventListener('change', (e) => initCategory(e.target.value));
-
-    zoomRange.addEventListener('input', (e) => {
-        zoomLevel = parseFloat(e.target.value);
-        zoomVal.textContent = zoomLevel.toFixed(1) + 'x';
-        const activeImg = container.querySelector('.slide.active img');
-        if (activeImg) {
-            activeImg.style.transition = `transform ${slideDuration / 1000}s linear`;
-            activeImg.style.transform = `scale(${zoomLevel}) translateZ(0)`;
-        }
-    });
-
-    speedRange.addEventListener('input', (e) => {
-        const seconds = Math.max(3, parseInt(e.target.value, 10));
-        slideDuration = seconds * 1000;
-        speedVal.textContent = seconds + 's';
-        const activeImg = container.querySelector('.slide.active img');
-        if (activeImg) {
-            activeImg.style.transition = `transform ${seconds}s linear`;
-        }
-        resetTimer();
-    });
-
-    document.getElementById('nextBtn').addEventListener('click', () => { nextSlide(); resetTimer(); });
-    document.getElementById('prevBtn').addEventListener('click', () => { prevSlide(); resetTimer(); });
-
-    playPauseBtn.addEventListener('click', togglePlay);
-
-    function togglePlay() {
-        isPlaying = !isPlaying;
-        if (isPlaying) {
-            playPauseBtn.textContent = 'Pause';
-            playPauseBtn.classList.add('btn-primary');
-            resetTimer();
-        } else {
-            playPauseBtn.textContent = 'Play';
-            playPauseBtn.classList.remove('btn-primary');
-            clearInterval(slideInterval);
-        }
-    }
-
-    // Fullscreen
-    fullscreenBtn.addEventListener('click', () => {
-        if (!document.fullscreenElement) {
-            appWrapper.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
-        } else {
-            document.exitFullscreen();
-        }
-    });
-
-    document.addEventListener('fullscreenchange', () => {
-        fullscreenBtn.textContent = document.fullscreenElement ? '⛶' : '⛶';
-    });
-
-    // JSON upload
-    document.getElementById('jsonUploader').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            try {
-                const parsed = JSON.parse(event.target.result);
-                if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
-                    slideshowData = parsed;
-                    loadCategories();
-                } else {
-                    alert('Invalid JSON structure.');
-                }
-            } catch {
-                alert('Could not parse JSON file.');
-            }
-        };
-        reader.readAsText(file);
-    });
-
-    // Audio upload
-    document.getElementById('audioUploader').addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const url = URL.createObjectURL(file);
-        bgAudio.src = url;
-        bgAudio.muted = isMuted;
-        bgAudio.play().catch(() => {
-            // Autoplay blocked until user interaction; will play on next click
-        });
-    });
-
-    muteBtn.addEventListener('click', () => {
-        isMuted = !isMuted;
-        bgAudio.muted = isMuted;
-        muteBtn.textContent = isMuted ? '🔇' : '🔊';
-    });
-
-    // Keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
-        switch (e.code) {
-            case 'ArrowLeft':  e.preventDefault(); prevSlide(); resetTimer(); break;
-            case 'ArrowRight': e.preventDefault(); nextSlide(); resetTimer(); break;
-            case 'Space':      e.preventDefault(); togglePlay(); break;
-            case 'KeyM':       muteBtn.click(); break;
-            case 'KeyF':       fullscreenBtn.click(); break;
-        }
-    });
-
-    // Boot
-    loadCategories();
+loadCategories();
 </script>
 </body>
 </html>
