@@ -134,21 +134,26 @@
             width: 100%; height: 100%;
             object-fit: cover;
             transform: scale(1) translateZ(0);
-            transition: transform var(--duration) linear;
             will-change: transform;
             backface-visibility: hidden;
         }
         
-        /* Ken Burns Zoom & Pan Transitions */
-        .slide.active img { 
-            transform: scale(var(--zoom-level)) translateZ(0); 
+        /* Keyframe-based Ken Burns Zoom for instant pause capability */
+        @keyframes kenBurnsZoom {
+            0% { transform: scale(1) translateZ(0); }
+            100% { transform: scale(var(--zoom-level)) translateZ(0); }
         }
 
-        /* Instant freeze when paused */
-        .player-container.paused .slide.active img,
-        .player-container.paused .slide {
-            transition-play-state: paused !important;
+        .slide.active img {
+            animation: kenBurnsZoom var(--duration) linear infinite alternate;
+        }
+
+        /* Instant freeze when paused class is added to container */
+        .player-container.paused .slide.active img {
             animation-play-state: paused !important;
+        }
+        .player-container.paused .slide {
+            transition: none !important;
         }
 
         .slide.active.pan-center img { transform-origin: center center; }
@@ -233,6 +238,23 @@
         </div>
     </div>
 
+    <!-- Secondary Toolbar: Background Audio Upload & Controls -->
+    <div class="toolbar">
+        <div class="toolbar-section">
+            <span class="toolbar-label">Music:</span>
+            <input type="file" id="audioUploader" accept="audio/*">
+        </div>
+        <div class="toolbar-section">
+            <button class="btn" id="muteBtn">🔊 Mute</button>
+            <span class="toolbar-label">Volume:</span>
+            <input type="range" id="volumeRange" min="0" max="1" step="0.05" value="0.5">
+            <span class="slider-value" id="volumeVal">50%</span>
+        </div>
+    </div>
+
+    <!-- Background Audio Element -->
+    <audio id="bgAudio" loop></audio>
+
     <!-- Slideshow Player -->
     <div class="player-container" id="playerContainer">
         <!-- Slides injected via JS -->
@@ -284,6 +306,15 @@
     const speedVal = document.getElementById('speedVal');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const appWrapper = document.getElementById('appWrapper');
+    
+    // Audio elements
+    const audioUploader = document.getElementById('audioUploader');
+    const bgAudio = document.getElementById('bgAudio');
+    const muteBtn = document.getElementById('muteBtn');
+    const volumeRange = document.getElementById('volumeRange');
+    const volumeVal = document.getElementById('volumeVal');
+
+    bgAudio.volume = 0.5; // default 50% volume
 
     function loadCategories() {
         categorySelect.innerHTML = '';
@@ -412,13 +443,39 @@
         if (isPlaying) {
             playPauseBtn.textContent = 'Pause';
             playPauseBtn.classList.add('btn-primary');
-            container.classList.remove('paused'); // Resume animation instantly
+            container.classList.remove('paused');
             resetTimer();
         } else {
             playPauseBtn.textContent = 'Play';
             playPauseBtn.classList.remove('btn-primary');
-            container.classList.add('paused');    // Freeze animation instantly
+            container.classList.add('paused');
             clearInterval(slideInterval);
+        }
+    });
+
+    // Audio Uploader handling
+    audioUploader.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const fileURL = URL.createObjectURL(file);
+        bgAudio.src = fileURL;
+        bgAudio.play().catch(err => console.log("Audio autoplay restricted:", err));
+    });
+
+    // Mute / Unmute Button
+    muteBtn.addEventListener('click', () => {
+        bgAudio.muted = !bgAudio.muted;
+        muteBtn.textContent = bgAudio.muted ? '🔇 Unmute' : '🔊 Mute';
+    });
+
+    // Volume Slider
+    volumeRange.addEventListener('input', (e) => {
+        const vol = parseFloat(e.target.value);
+        bgAudio.volume = vol;
+        volumeVal.textContent = Math.round(vol * 100) + '%';
+        if (vol > 0 && bgAudio.muted) {
+            bgAudio.muted = false;
+            muteBtn.textContent = '🔊 Mute';
         }
     });
 
