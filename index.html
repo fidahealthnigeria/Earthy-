@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ken Burns Slideshow Player</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #090d16;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 15px;
+        }
+        .app-wrapper {
+            width: 90vw;
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .toolbar-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .toolbar-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        select, input[type="file"], input[type="range"] {
+            background: #0f172a;
+            color: white;
+            border: 1px solid #475569;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        input[type="range"] {
+            accent-color: #0284c7;
+            padding: 0;
+            height: 6px;
+        }
+        .slider-value {
+            font-size: 12px;
+            color: #38bdf8;
+            min-width: 35px;
+        }
+        input[type="file"]::file-selector-button {
+            background: #334155;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        /* Player Container */
+        .player-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 35px -10px rgba(0, 0, 0, 0.7);
+            border: 1px solid #334155;
+        }
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .slide.active { 
+            opacity: 1; 
+            z-index: 2;
+        }
+        .slide img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            transform: scale(1);
+            transition: transform linear;
+        }
+        
+        /* Randomized Ken Burns Variations */
+        .slide.active.pan-center img { transform-origin: center center; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
+        .slide.active.pan-tl img { transform-origin: top left; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
+        .slide.active.pan-br img { transform-origin: bottom right; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
+        .slide.active.pan-tr img { transform-origin: top right; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
+        .slide.active.pan-bl img { transform-origin: bottom left; transform: scale(var(--zoom-level)); transition-duration: var(--duration); }
+
+        /* Caption Overlay */
+        .caption {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            border: 1px solid #334155;
+            z-index: 10;
+        }
+
+        /* Controls Overlay Footer */
+        .controls-overlay {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+        }
+        .btn {
+            background: #334155;
+            border: 1px solid #64748b;
+            color: #ffffff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background: #475569;
+            border-color: #94a3b8;
+        }
+        .btn-primary {
+            background: #0284c7;
+            border-color: #38bdf8;
+        }
+        .btn-primary:hover {
+            background: #0369a1;
+        }
+        .slide-counter {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <!-- Toolbar: File Uploader, Category Selector, Zoom & Speed Sliders -->
+    <div class="toolbar">
+        <div class="toolbar-section">
+            <span class="toolbar-label">New image:</span>
+            <input type="file" id="jsonUploader" accept=".json">
+        </div>
+        <div class="toolbar-section">
+            <span class="toolbar-label">Category:</span>
+            <select id="categorySelect"></select>
+        </div>
+        <div class="toolbar-section">
+            <span class="toolbar-label">Zoom:</span>
+            <input type="range" id="zoomRange" min="1.1" max="1.8" step="0.1" value="1.3">
+            <span class="slider-value" id="zoomVal">1.3x</span>
+        </div>
+        <div class="toolbar-section">
+            <span class="toolbar-label">Speed:</span>
+            <input type="range" id="speedRange" min="3" max="15" step="1" value="6">
+            <span class="slider-value" id="speedVal">6s</span>
+        </div>
+    </div>
+
+    <!-- Slideshow Player -->
+    <div class="player-container" id="playerContainer">
+        <!-- Slides injected via JS -->
+    </div>
+
+    <!-- Navigation & Playback Controls -->
+    <div class="controls-overlay">
+        <div class="toolbar-section">
+            <button class="btn" id="prevBtn">❮ Prev</button>
+            <button class="btn btn-primary" id="playPauseBtn">Pause</button>
+            <button class="btn" id="nextBtn">Next ❯</button>
+        </div>
+        <div class="slide-counter" id="slideCounter">Slide 0 of 0</div>
+    </div>
+</div>
+
+<script>
+    let slideshowData = {
+        "nature": [
+            { "url": "https://picsum.photos/id/1018/1200/800", "caption": "Yosemite Valley" },
+            { "url": "https://picsum.photos/id/1015/1200/800", "caption": "Misty Forest" }
+        ],
+        "architecture": [
+            { "url": "https://picsum.photos/id/1031/1200/800", "caption": "Modern Bridge" },
+            { "url": "https://picsum.photos/id/1043/1200/800", "caption": "Urban Tower" }
+        ]
+    };
+
+    let currentCategory = 'nature';
+    let currentIndex = 0;
+    let slideInterval = null;
+    let isPlaying = true;
+    
+    let slideDuration = 6000; // 6 seconds default
+    let zoomLevel = '1.3';    // 1.3x zoom default
+
+    const panClasses = ['pan-center', 'pan-tl', 'pan-br', 'pan-tr', 'pan-bl'];
+
+    const container = document.getElementById('playerContainer');
+    const categorySelect = document.getElementById('categorySelect');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const slideCounter = document.getElementById('slideCounter');
+    const zoomRange = document.getElementById('zoomRange');
+    const zoomVal = document.getElementById('zoomVal');
+    const speedRange = document.getElementById('speedRange');
+    const speedVal = document.getElementById('speedVal');
+
+    function loadCategories() {
+        categorySelect.innerHTML = '';
+        Object.keys(slideshowData).forEach(cat => {
+            const opt = document.createElement('option');
+            opt.value = cat;
+            opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+            categorySelect.appendChild(opt);
+        });
+        currentCategory = Object.keys(slideshowData)[0];
+        initCategory(currentCategory);
+    }
+
+    function initCategory(catName) {
+        currentCategory = catName;
+        currentIndex = 0;
+        container.innerHTML = '';
+
+        const items = slideshowData[currentCategory];
+        if (!items || items.length === 0) return;
+
+        items.forEach((item, index) => {
+            const slide = document.createElement('div');
+            slide.className = `slide ${index === 0 ? 'active ' + panClasses[0] : ''}`;
+            
+            slide.style.setProperty('--zoom-level', zoomLevel);
+            slide.style.setProperty('--duration', `${slideDuration / 1000}s`);
+
+            const img = document.createElement('img');
+            img.src = item.url;
+            img.alt = item.caption || '';
+            slide.appendChild(img);
+
+            if (item.caption) {
+                const caption = document.createElement('div');
+                caption.className = 'caption';
+                caption.textContent = item.caption;
+                slide.appendChild(caption);
+            }
+
+            container.appendChild(slide);
+        });
+
+        updateCounter();
+        resetTimer();
+    }
+
+    function goToSlide(index) {
+        const slides = document.querySelectorAll('.slide');
+        if (slides.length === 0) return;
+
+        slides[currentIndex].classList.remove('active');
+        currentIndex = (index + slides.length) % slides.length;
+        
+        const nextSlide = slides[currentIndex];
+        const randomPan = panClasses[Math.floor(Math.random() * panClasses.length)];
+        
+        nextSlide.style.setProperty('--zoom-level', zoomLevel);
+        nextSlide.style.setProperty('--duration', `${slideDuration / 1000}s`);
+        
+        nextSlide.className = `slide ${randomPan}`;
+        nextSlide.classList.add('active');
+
+        updateCounter();
+    }
+
+    function nextSlide() {
+        goToSlide(currentIndex + 1);
+    }
+
+    function prevSlide() {
+        goToSlide(currentIndex - 1);
+    }
+
+    function updateCounter() {
+        const items = slideshowData[currentCategory];
+        slideCounter.textContent = `Slide ${currentIndex + 1} of ${items ? items.length : 0}`;
+    }
+
+    function resetTimer() {
+        clearInterval(slideInterval);
+        if (isPlaying) {
+            slideInterval = setInterval(nextSlide, slideDuration);
+        }
+    }
+
+    // Event Listeners
+    categorySelect.addEventListener('change', (e) => {
+        initCategory(e.target.value);
+    });
+
+    zoomRange.addEventListener('input', (e) => {
+        zoomLevel = e.target.value;
+        zoomVal.textContent = zoomLevel + 'x';
+        
+        const activeSlide = container.querySelector('.slide.active');
+        if (activeSlide) {
+            activeSlide.style.setProperty('--zoom-level', zoomLevel);
+        }
+    });
+
+    speedRange.addEventListener('input', (e) => {
+        const seconds = parseInt(e.target.value, 10);
+        slideDuration = seconds * 1000;
+        speedVal.textContent = seconds + 's';
+
+        const activeSlide = container.querySelector('.slide.active');
+        if (activeSlide) {
+            activeSlide.style.setProperty('--duration', `${seconds}s`);
+        }
+        resetTimer();
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        nextSlide();
+        resetTimer();
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+        prevSlide();
+        resetTimer();
+    });
+
+    playPauseBtn.addEventListener('click', () => {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+            playPauseBtn.textContent = 'Pause';
+            playPauseBtn.classList.add('btn-primary');
+            resetTimer();
+        } else {
+            playPauseBtn.textContent = 'Play';
+            playPauseBtn.classList.remove('btn-primary');
+            clearInterval(slideInterval);
+        }
+    });
+
+    // Handle JSON file upload
+    document.getElementById('jsonUploader').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const parsed = JSON.parse(event.target.result);
+                if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                    slideshowData = parsed;
+                    loadCategories();
+                } else {
+                    alert('Invalid JSON structure format.');
+                }
+            } catch (err) {
+                alert('Could not parse JSON file. Ensure it is valid JSON.');
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    // Boot up
+    loadCategories();
+</script>
+
+</body>
+</html>
