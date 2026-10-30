@@ -15,18 +15,17 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            padding: 20px;
-            gap: 15px;
+            padding: 12px;
+            gap: 10px;
         }
         .app-wrapper {
-            width: 90vw;
-            max-width: 950px;
+            width: 92vw;
+            max-width: 960px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 10px;
         }
 
-        /* Fullscreen mode adjustments */
         :fullscreen {
             background-color: #090d16;
             display: flex;
@@ -35,7 +34,7 @@
             justify-content: center;
             width: 100vw;
             height: 100vh;
-            padding: 20px;
+            padding: 12px;
         }
         :fullscreen .app-wrapper {
             width: 100%;
@@ -48,141 +47,116 @@
             height: auto !important;
         }
 
-        /* Toolbar */
-        .toolbar {
+        .toolbar, .controls-overlay {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #1e293b;
-            padding: 12px 18px;
-            border-radius: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
             border: 1px solid #334155;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 8px;
         }
         .toolbar-section {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             flex-wrap: wrap;
         }
         .toolbar-label {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
             color: #94a3b8;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
         select, input[type="file"], input[type="range"] {
             background: #0f172a;
             color: white;
             border: 1px solid #475569;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 13px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
             cursor: pointer;
         }
         input[type="range"] {
             accent-color: #0284c7;
             padding: 0;
-            height: 6px;
+            height: 5px;
+            width: 80px;
         }
         .slider-value {
-            font-size: 12px;
+            font-size: 11px;
             color: #38bdf8;
-            min-width: 35px;
+            min-width: 28px;
         }
         input[type="file"]::file-selector-button {
             background: #334155;
             color: white;
             border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 3px 6px;
+            border-radius: 3px;
             cursor: pointer;
-            margin-right: 8px;
+            margin-right: 6px;
+            font-size: 11px;
         }
 
-        /* Player Container */
         .player-container {
             position: relative;
             width: 100%;
-            height: 500px;
+            height: 520px;
             background: #000;
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 25px 35px -10px rgba(0, 0, 0, 0.7);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.7);
             border: 1px solid #334155;
         }
         .slide {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            inset: 0;
             opacity: 0;
             z-index: 1;
-            transition: opacity 1.5s ease-in-out;
+            transition: opacity 1.4s ease-in-out;
             overflow: hidden;
             pointer-events: none;
-            will-change: opacity;
-            backface-visibility: hidden;
-            transform: translateZ(0);
         }
         .slide.active { 
             opacity: 1; 
             z-index: 2;
         }
         .slide img {
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             transform: scale(1) translateZ(0);
-            transition: transform var(--duration) linear;
             will-change: transform;
             backface-visibility: hidden;
         }
-        
-        /* Ken Burns Zoom & Pan Transitions */
-        .slide.active img { 
-            transform: scale(var(--zoom-level)) translateZ(0); 
-        }
 
-        .slide.active.pan-center img { transform-origin: center center; }
-        .slide.active.pan-tl img { transform-origin: top left; }
-        .slide.active.pan-br img { transform-origin: bottom right; }
-        .slide.active.pan-tr img { transform-origin: top right; }
-        .slide.active.pan-bl img { transform-origin: bottom left; }
-
-        /* Caption Overlay */
         .caption {
             position: absolute;
-            bottom: 25px;
-            left: 25px;
-            background: rgba(15, 23, 42, 0.85);
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 14px;
+            bottom: 16px;
+            left: 16px;
+            background: rgba(15, 23, 42, 0.88);
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 13px;
             border: 1px solid #334155;
             z-index: 10;
         }
 
-        /* Controls Overlay Footer */
-        .controls-overlay {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1e293b;
-            padding: 12px 18px;
-            border-radius: 10px;
-            border: 1px solid #334155;
-        }
         .btn {
             background: #334155;
             border: 1px solid #64748b;
             color: #ffffff;
-            padding: 8px 14px;
-            border-radius: 6px;
+            padding: 6px 10px;
+            border-radius: 5px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 13px;
-            transition: all 0.2s ease;
+            font-size: 12px;
+            transition: all 0.15s ease;
+            line-height: 1;
         }
         .btn:hover {
             background: #475569;
@@ -196,54 +170,59 @@
             background: #0369a1;
         }
         .slide-counter {
-            font-size: 13px;
+            font-size: 12px;
             color: #94a3b8;
+        }
+        #muteBtn {
+            min-width: 36px;
         }
     </style>
 </head>
 <body>
 
 <div class="app-wrapper" id="appWrapper">
-    <!-- Toolbar: File Uploader, Category Selector, Zoom & Speed Sliders -->
     <div class="toolbar">
         <div class="toolbar-section">
-            <span class="toolbar-label">New image:</span>
+            <span class="toolbar-label">JSON</span>
             <input type="file" id="jsonUploader" accept=".json">
         </div>
         <div class="toolbar-section">
-            <span class="toolbar-label">Category:</span>
+            <span class="toolbar-label">Audio</span>
+            <input type="file" id="audioUploader" accept="audio/*">
+        </div>
+        <div class="toolbar-section">
+            <span class="toolbar-label">Category</span>
             <select id="categorySelect"></select>
         </div>
         <div class="toolbar-section">
-            <span class="toolbar-label">Zoom:</span>
+            <span class="toolbar-label">Zoom</span>
             <input type="range" id="zoomRange" min="1.1" max="1.8" step="0.1" value="1.3">
             <span class="slider-value" id="zoomVal">1.3x</span>
         </div>
         <div class="toolbar-section">
-            <span class="toolbar-label">Speed:</span>
+            <span class="toolbar-label">Speed</span>
             <input type="range" id="speedRange" min="3" max="15" step="1" value="6">
             <span class="slider-value" id="speedVal">6s</span>
         </div>
     </div>
 
-    <!-- Slideshow Player -->
-    <div class="player-container" id="playerContainer">
-        <!-- Slides injected via JS -->
-    </div>
+    <div class="player-container" id="playerContainer"></div>
 
-    <!-- Navigation & Playback Controls -->
     <div class="controls-overlay">
         <div class="toolbar-section">
-            <button class="btn" id="prevBtn">❮ Prev</button>
+            <button class="btn" id="prevBtn">❮</button>
             <button class="btn btn-primary" id="playPauseBtn">Pause</button>
-            <button class="btn" id="nextBtn">Next ❯</button>
+            <button class="btn" id="nextBtn">❯</button>
+            <button class="btn" id="muteBtn">🔊</button>
         </div>
         <div class="toolbar-section">
-            <button class="btn" id="fullscreenBtn">⛶ Fullscreen</button>
+            <button class="btn" id="fullscreenBtn">⛶</button>
             <div class="slide-counter" id="slideCounter">Slide 0 of 0</div>
         </div>
     </div>
 </div>
+
+<audio id="bgAudio" loop></audio>
 
 <script>
     let slideshowData = {
@@ -261,9 +240,10 @@
     let currentIndex = 0;
     let slideInterval = null;
     let isPlaying = true;
+    let isMuted = false;
     
-    let slideDuration = 6000; // 6 seconds default
-    let zoomLevel = '1.3';    // 1.3x zoom default
+    let slideDuration = 6000;
+    let zoomLevel = 1.3;
 
     const panClasses = ['pan-center', 'pan-tl', 'pan-br', 'pan-tr', 'pan-bl'];
 
@@ -277,6 +257,8 @@
     const speedVal = document.getElementById('speedVal');
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const appWrapper = document.getElementById('appWrapper');
+    const muteBtn = document.getElementById('muteBtn');
+    const bgAudio = document.getElementById('bgAudio');
 
     function loadCategories() {
         categorySelect.innerHTML = '';
@@ -286,8 +268,8 @@
             opt.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
             categorySelect.appendChild(opt);
         });
-        currentCategory = Object.keys(slideshowData)[0];
-        initCategory(currentCategory);
+        currentCategory = Object.keys(slideshowData)[0] || '';
+        if (currentCategory) initCategory(currentCategory);
     }
 
     function initCategory(catName) {
@@ -300,14 +282,12 @@
 
         items.forEach((item, index) => {
             const slide = document.createElement('div');
-            slide.className = `slide ${index === 0 ? 'active ' + panClasses[0] : ''}`;
+            slide.className = 'slide';
             
-            slide.style.setProperty('--zoom-level', zoomLevel);
-            slide.style.setProperty('--duration', `${slideDuration / 1000}s`);
-
             const img = document.createElement('img');
             img.src = item.url;
             img.alt = item.caption || '';
+            img.style.transform = 'scale(1) translateZ(0)';
             slide.appendChild(img);
 
             if (item.caption) {
@@ -320,36 +300,61 @@
             container.appendChild(slide);
         });
 
+        // Activate first slide with animation
+        setTimeout(() => goToSlide(0, true), 50);
         updateCounter();
         resetTimer();
     }
 
-    function goToSlide(index) {
+    function applyKenBurns(img, origin = 'center center') {
+        img.style.transition = 'none';
+        img.style.transformOrigin = origin;
+        img.style.transform = 'scale(1) translateZ(0)';
+        // Force reflow so the transition restarts
+        void img.offsetWidth;
+        img.style.transition = `transform ${slideDuration / 1000}s linear`;
+        img.style.transform = `scale(${zoomLevel}) translateZ(0)`;
+    }
+
+    function goToSlide(index, isInit = false) {
         const slides = document.querySelectorAll('.slide');
         if (slides.length === 0) return;
 
-        slides[currentIndex].classList.remove('active');
+        const prevSlide = slides[currentIndex];
+        if (prevSlide && !isInit) {
+            const prevImg = prevSlide.querySelector('img');
+            if (prevImg) {
+                // Freeze outgoing image at current scale (no reverse zoom)
+                const computed = getComputedStyle(prevImg).transform;
+                prevImg.style.transition = 'none';
+                prevImg.style.transform = computed;
+            }
+            prevSlide.classList.remove('active');
+        }
+
         currentIndex = (index + slides.length) % slides.length;
-        
         const nextSlide = slides[currentIndex];
         const randomPan = panClasses[Math.floor(Math.random() * panClasses.length)];
         
-        nextSlide.style.setProperty('--zoom-level', zoomLevel);
-        nextSlide.style.setProperty('--duration', `${slideDuration / 1000}s`);
-        
         nextSlide.className = `slide ${randomPan}`;
-        nextSlide.classList.add('active');
+        const nextImg = nextSlide.querySelector('img');
+        if (nextImg) {
+            const origins = {
+                'pan-center': 'center center',
+                'pan-tl': 'top left',
+                'pan-br': 'bottom right',
+                'pan-tr': 'top right',
+                'pan-bl': 'bottom left'
+            };
+            applyKenBurns(nextImg, origins[randomPan] || 'center center');
+        }
 
+        nextSlide.classList.add('active');
         updateCounter();
     }
 
-    function nextSlide() {
-        goToSlide(currentIndex + 1);
-    }
-
-    function prevSlide() {
-        goToSlide(currentIndex - 1);
-    }
+    function nextSlide() { goToSlide(currentIndex + 1); }
+    function prevSlide() { goToSlide(currentIndex - 1); }
 
     function updateCounter() {
         const items = slideshowData[currentCategory];
@@ -364,17 +369,15 @@
     }
 
     // Event Listeners
-    categorySelect.addEventListener('change', (e) => {
-        initCategory(e.target.value);
-    });
+    categorySelect.addEventListener('change', (e) => initCategory(e.target.value));
 
     zoomRange.addEventListener('input', (e) => {
-        zoomLevel = e.target.value;
-        zoomVal.textContent = zoomLevel + 'x';
-        
-        const activeSlide = container.querySelector('.slide.active');
-        if (activeSlide) {
-            activeSlide.style.setProperty('--zoom-level', zoomLevel);
+        zoomLevel = parseFloat(e.target.value);
+        zoomVal.textContent = zoomLevel.toFixed(1) + 'x';
+        const activeImg = container.querySelector('.slide.active img');
+        if (activeImg) {
+            activeImg.style.transition = `transform ${slideDuration / 1000}s linear`;
+            activeImg.style.transform = `scale(${zoomLevel}) translateZ(0)`;
         }
     });
 
@@ -382,25 +385,19 @@
         const seconds = Math.max(3, parseInt(e.target.value, 10));
         slideDuration = seconds * 1000;
         speedVal.textContent = seconds + 's';
-
-        const activeSlide = container.querySelector('.slide.active');
-        if (activeSlide) {
-            activeSlide.style.setProperty('--duration', `${seconds}s`);
+        const activeImg = container.querySelector('.slide.active img');
+        if (activeImg) {
+            activeImg.style.transition = `transform ${seconds}s linear`;
         }
         resetTimer();
     });
 
-    document.getElementById('nextBtn').addEventListener('click', () => {
-        nextSlide();
-        resetTimer();
-    });
+    document.getElementById('nextBtn').addEventListener('click', () => { nextSlide(); resetTimer(); });
+    document.getElementById('prevBtn').addEventListener('click', () => { prevSlide(); resetTimer(); });
 
-    document.getElementById('prevBtn').addEventListener('click', () => {
-        prevSlide();
-        resetTimer();
-    });
+    playPauseBtn.addEventListener('click', togglePlay);
 
-    playPauseBtn.addEventListener('click', () => {
+    function togglePlay() {
         isPlaying = !isPlaying;
         if (isPlaying) {
             playPauseBtn.textContent = 'Pause';
@@ -411,32 +408,25 @@
             playPauseBtn.classList.remove('btn-primary');
             clearInterval(slideInterval);
         }
-    });
+    }
 
-    // Fullscreen Toggle functionality
+    // Fullscreen
     fullscreenBtn.addEventListener('click', () => {
         if (!document.fullscreenElement) {
-            appWrapper.requestFullscreen().catch(err => {
-                alert(`Error attempting to enable fullscreen mode: ${err.message}`);
-            });
+            appWrapper.requestFullscreen().catch(err => alert(`Fullscreen error: ${err.message}`));
         } else {
             document.exitFullscreen();
         }
     });
 
     document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) {
-            fullscreenBtn.textContent = '⛶ Exit Fullscreen';
-        } else {
-            fullscreenBtn.textContent = '⛶ Fullscreen';
-        }
+        fullscreenBtn.textContent = document.fullscreenElement ? '⛶' : '⛶';
     });
 
-    // Handle JSON file upload
+    // JSON upload
     document.getElementById('jsonUploader').addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = function(event) {
             try {
@@ -445,18 +435,47 @@
                     slideshowData = parsed;
                     loadCategories();
                 } else {
-                    alert('Invalid JSON structure format.');
+                    alert('Invalid JSON structure.');
                 }
-            } catch (err) {
-                alert('Could not parse JSON file. Ensure it is valid JSON.');
+            } catch {
+                alert('Could not parse JSON file.');
             }
         };
         reader.readAsText(file);
     });
 
-    // Boot up
+    // Audio upload
+    document.getElementById('audioUploader').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+        bgAudio.src = url;
+        bgAudio.muted = isMuted;
+        bgAudio.play().catch(() => {
+            // Autoplay blocked until user interaction; will play on next click
+        });
+    });
+
+    muteBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        bgAudio.muted = isMuted;
+        muteBtn.textContent = isMuted ? '🔇' : '🔊';
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+        switch (e.code) {
+            case 'ArrowLeft':  e.preventDefault(); prevSlide(); resetTimer(); break;
+            case 'ArrowRight': e.preventDefault(); nextSlide(); resetTimer(); break;
+            case 'Space':      e.preventDefault(); togglePlay(); break;
+            case 'KeyM':       muteBtn.click(); break;
+            case 'KeyF':       fullscreenBtn.click(); break;
+        }
+    });
+
+    // Boot
     loadCategories();
 </script>
-
 </body>
 </html>
