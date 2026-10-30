@@ -350,24 +350,37 @@
         const slides = document.querySelectorAll('.slide');
         if (slides.length === 0) return;
 
-        slides[currentIndex].classList.remove('active');
-        
-        // Calculate next index and assign a fresh random pan class smoothly
-        const prevIndex = currentIndex;
+        const oldSlide = slides[currentIndex];
         currentIndex = (index + slides.length) % slides.length;
-        
         const nextSlide = slides[currentIndex];
         const randomPan = panClasses[Math.floor(Math.random() * panClasses.length)];
-        
-        // Force reflow reset on loop-around to prevent starting-frame click/pop
-        nextSlide.className = 'slide';
-        void nextSlide.offsetWidth; 
+
+        // Seamless loop transition reset: temporarily freeze old slide matrix so it doesn't pop on exit
+        const oldImg = oldSlide.querySelector('img');
+        if (oldImg) {
+            const currentTransform = window.getComputedStyle(oldImg).transform;
+            oldImg.style.transition = 'none';
+            oldImg.style.transform = currentTransform;
+        }
+
+        oldSlide.classList.remove('active');
+
+        // Force browser layout flush before activating the next slide
+        void nextSlide.offsetWidth;
 
         nextSlide.style.setProperty('--zoom-level', zoomLevel);
         nextSlide.style.setProperty('--duration', `${slideDuration / 1000}s`);
         
         nextSlide.className = `slide ${randomPan}`;
         nextSlide.classList.add('active');
+
+        // Clean up old slide transition lock after crossfade completes
+        setTimeout(() => {
+            if (oldImg) {
+                oldImg.style.transition = '';
+                oldImg.style.transform = '';
+            }
+        }, 1500);
 
         updateCounter();
     }
